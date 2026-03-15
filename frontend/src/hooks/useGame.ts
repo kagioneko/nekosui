@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { api } from '../api/client'
 import type { CatProfile, ActionType, Pose, Expression, TimePeriod } from '../types'
 
@@ -65,6 +65,27 @@ export function useGame() {
       setState(s => s ? { ...s, isLoading: false } : s)
     }
   }, [state])
+
+  // 定期ポーリング: 30秒ごとに状態を更新（時間帯変化・逃げ猫の自然回復を反映）
+  useEffect(() => {
+    if (!state?.sessionId || state.isLoading) return
+
+    const timer = setInterval(async () => {
+      try {
+        const status = await api.status(state.sessionId)
+        setState(s => s ? {
+          ...s,
+          timePeriod: status.time_period,
+          isFled: status.is_fled,
+          relationshipLevel: status.relationship_level,
+        } : s)
+      } catch (err) {
+        console.error('[nekosui] poll error', err)
+      }
+    }, 30_000)
+
+    return () => clearInterval(timer)
+  }, [state?.sessionId, state?.isLoading])
 
   return { state, setup, act }
 }
