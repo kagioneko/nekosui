@@ -109,7 +109,7 @@ def _neuro_to_description(neuro: dict, personality: str) -> str:
 
 # --- MCP サーバー ---
 
-mcp = FastMCP("nekosui", description="気分屋な猫と距離感を育てるゲーム「ネコスイ」")
+mcp = FastMCP("nekosui")
 
 
 @mcp.tool()
