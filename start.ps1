@@ -74,16 +74,9 @@ if (Test-Path $neuroDir) {
 # --- バックエンド起動 ---
 Write-Step "バックエンド起動"
 
-$backendScript = {
-    param($dir)
-    Set-Location $dir
-    $env:PYTHONUNBUFFERED = "1"
-    python -m uvicorn main:app --reload --port 8000
-}
-
-Start-Process powershell -ArgumentList "-NoExit", "-Command",
-    "& { Set-Location '$backendDir'; `$Host.UI.RawUI.WindowTitle = 'ネコスイ バックエンド'; python -m uvicorn main:app --reload --port 8000 }" `
-    -WindowStyle Normal
+# バックエンド起動コマンドをファイルに書き出して実行（引数エスケープ問題を回避）
+$backendCmd = "Set-Location '$backendDir'; `$Host.UI.RawUI.WindowTitle = 'ネコスイ バックエンド'; python -m uvicorn main:app --reload --port 8000; Write-Host ''; Write-Host 'サーバーが停止しました' -ForegroundColor Red; Read-Host 'Enterで閉じる'"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -WindowStyle Normal
 
 Write-OK "バックエンドを起動しました（ポート 8000）"
 
@@ -93,9 +86,8 @@ Start-Sleep -Seconds 3
 # --- フロントエンド起動 ---
 Write-Step "フロントエンド起動"
 
-Start-Process powershell -ArgumentList "-NoExit", "-Command",
-    "& { Set-Location '$frontendDir'; `$Host.UI.RawUI.WindowTitle = 'ネコスイ フロントエンド'; npm run dev }" `
-    -WindowStyle Normal
+$frontendCmd = "Set-Location '$frontendDir'; `$Host.UI.RawUI.WindowTitle = 'ネコスイ フロントエンド'; npm run dev; Write-Host ''; Write-Host 'サーバーが停止しました' -ForegroundColor Red; Read-Host 'Enterで閉じる'"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $frontendCmd -WindowStyle Normal
 
 Write-OK "フロントエンドを起動しました（ポート 5173）"
 
@@ -115,4 +107,4 @@ Write-Host ""
 Write-Host "  ブラウザで http://localhost:5173 を開いてください" -ForegroundColor White
 Write-Host "  終了するには各ターミナルウィンドウで Ctrl+C を押してください" -ForegroundColor White
 Write-Host ""
-Start-Sleep -Seconds 2
+Read-Host "このウィンドウは閉じてOKです。Enterで閉じる"
