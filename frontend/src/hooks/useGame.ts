@@ -2,6 +2,20 @@ import { useState, useCallback, useEffect } from 'react'
 import { api } from '../api/client'
 import type { CatProfile, ActionType, Pose, Expression, TimePeriod } from '../types'
 
+const SESSION_KEY = 'nekosui_session_id'
+
+export function getSavedSessionId(): string | null {
+  return localStorage.getItem(SESSION_KEY)
+}
+
+function saveSessionId(id: string) {
+  localStorage.setItem(SESSION_KEY, id)
+}
+
+export function clearSavedSession() {
+  localStorage.removeItem(SESSION_KEY)
+}
+
 export interface GameState {
   sessionId: string
   cat: CatProfile
@@ -26,6 +40,7 @@ export function useGame() {
     const res = await api.setup(name, personality, furColor)
     console.debug('[nekosui] setup', res.initial_state)
 
+    saveSessionId(res.session_id)
     const status = await api.status(res.session_id)
     setState({
       sessionId: res.session_id,
@@ -39,6 +54,29 @@ export function useGame() {
       timePeriod: status.time_period,
       isLoading: false,
     })
+  }, [])
+
+  // 保存済みセッションを復元する
+  const resume = useCallback(async (sessionId: string) => {
+    try {
+      const status = await api.status(sessionId)
+      setState({
+        sessionId,
+        cat: status.cat,
+        message: 'おかえり…（じっとこちらを見ている）',
+        pose: 'sit',
+        expression: 'normal',
+        sound: null,
+        isFled: status.is_fled,
+        relationshipLevel: status.relationship_level,
+        timePeriod: status.time_period,
+        isLoading: false,
+      })
+      return true
+    } catch {
+      clearSavedSession()
+      return false
+    }
   }, [])
 
   const act = useCallback(async (action: ActionType, text?: string) => {
@@ -87,5 +125,5 @@ export function useGame() {
     return () => clearInterval(timer)
   }, [state?.sessionId, state?.isLoading])
 
-  return { state, setup, act }
+  return { state, setup, resume, act }
 }
