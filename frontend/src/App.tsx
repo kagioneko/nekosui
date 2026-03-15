@@ -42,6 +42,10 @@ export default function App() {
   }
 
   const handleNewCat = () => {
+    const ok = window.confirm(
+      `${savedCatName} との思い出はなくなります。\n本当に新しい猫を作りますか？`
+    )
+    if (!ok) return
     clearSavedSession()
     setPhase('setup')
   }
