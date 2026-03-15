@@ -2,19 +2,6 @@ import { useState, useCallback, useEffect } from 'react'
 import { api } from '../api/client'
 import type { CatProfile, ActionType, Pose, Expression, TimePeriod } from '../types'
 
-const SESSION_KEY = 'nekosui_session_id'
-
-export function getSavedSessionId(): string | null {
-  return localStorage.getItem(SESSION_KEY)
-}
-
-function saveSessionId(id: string) {
-  localStorage.setItem(SESSION_KEY, id)
-}
-
-export function clearSavedSession() {
-  localStorage.removeItem(SESSION_KEY)
-}
 
 export interface GameState {
   sessionId: string
@@ -40,7 +27,6 @@ export function useGame() {
     const res = await api.setup(name, personality, furColor)
     console.debug('[nekosui] setup', res.initial_state)
 
-    saveSessionId(res.session_id)
     const status = await api.status(res.session_id)
     setState({
       sessionId: res.session_id,

@@ -45,6 +45,24 @@ from session_manager import (
 from time_behavior import get_time_period
 from recovery_manager import apply_action_recovery_boost, recovery_background_task
 
+# 保存済みセッションファイル
+_SAVED_SESSION_FILE = Path(__file__).parent / "saved_session.json"
+
+def _load_saved_session() -> str | None:
+    if _SAVED_SESSION_FILE.exists():
+        import json
+        data = json.loads(_SAVED_SESSION_FILE.read_text())
+        return data.get("session_id")
+    return None
+
+def _save_session(session_id: str) -> None:
+    import json
+    _SAVED_SESSION_FILE.write_text(json.dumps({"session_id": session_id}))
+
+def _clear_saved_session() -> None:
+    if _SAVED_SESSION_FILE.exists():
+        _SAVED_SESSION_FILE.unlink()
+
 
 # --- NeuroState 更新ユーティリティ ---
 
@@ -141,6 +159,26 @@ app.add_middleware(
 
 # --- エンドポイント ---
 
+@app.get("/api/saved-session")
+async def get_saved_session():
+    """保存済みセッションを返す。なければ404。"""
+    session_id = _load_saved_session()
+    if not session_id:
+        raise HTTPException(status_code=404, detail="No saved session")
+    status = await get_session_status(session_id)
+    if status is None:
+        _clear_saved_session()
+        raise HTTPException(status_code=404, detail="Session expired")
+    return {"session_id": session_id, "cat_name": status.cat.name}
+
+
+@app.delete("/api/saved-session")
+async def delete_saved_session():
+    """保存済みセッションを削除する（新しい猫を作るとき）。"""
+    _clear_saved_session()
+    return {"status": "cleared"}
+
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok", "version": "0.1.0", "llm": is_llm_enabled(), "llm_provider": active_provider()}
@@ -157,6 +195,7 @@ async def setup_cat(req: CatSetupRequest):
         birthday=init_data.birthday,
         neuro_state=init_data.neuro_state,
     )
+    _save_session(session_id)  # サーバー側に保存
 
     # 初日のあいさつ（O値で変化）
     o = init_data.neuro_state["O"]

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useGame, getSavedSessionId, clearSavedSession } from './hooks/useGame'
+import { useGame } from './hooks/useGame'
 import { SetupScreen } from './screens/SetupScreen'
 import { ChatScreen } from './screens/ChatScreen'
 import type { PersonalityType, FurColor } from './types'
@@ -12,41 +12,36 @@ export default function App() {
   const [phase, setPhase] = useState<AppPhase>('checking')
   const [isSetupLoading, setIsSetupLoading] = useState(false)
   const [savedCatName, setSavedCatName] = useState<string | null>(null)
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null)
 
-  // 起動時: 保存済みセッションの確認
+  // 起動時: サーバー側の保存済みセッションを確認
   useEffect(() => {
-    const sessionId = getSavedSessionId()
-    if (!sessionId) {
-      setPhase('setup')
-      return
-    }
-    api.status(sessionId)
-      .then(status => {
-        setSavedCatName(status.cat.name)
+    api.savedSession()
+      .then(data => {
+        setSavedCatName(data.cat_name)
+        setSavedSessionId(data.session_id)
         setPhase('resume_prompt')
       })
       .catch(() => {
-        clearSavedSession()
         setPhase('setup')
       })
   }, [])
 
   const handleResume = async () => {
-    const sessionId = getSavedSessionId()
-    if (!sessionId) return
+    if (!savedSessionId) return
     setIsSetupLoading(true)
-    const ok = await resume(sessionId)
+    const ok = await resume(savedSessionId)
     setIsSetupLoading(false)
     if (ok) setPhase('playing')
     else setPhase('setup')
   }
 
-  const handleNewCat = () => {
+  const handleNewCat = async () => {
     const ok = window.confirm(
       `${savedCatName} との思い出はなくなります。\n本当に新しい猫を作りますか？`
     )
     if (!ok) return
-    clearSavedSession()
+    await api.clearSavedSession()
     setPhase('setup')
   }
 
