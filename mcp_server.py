@@ -12,6 +12,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Literal
 
 # バックエンドのモジュールを使う
 BACKEND_DIR = Path(__file__).parent / "backend"
@@ -161,11 +162,21 @@ async def get_cat_status() -> str:
 
 
 @mcp.tool()
-async def setup_cat(name: str, personality: str = "maipeesu", fur_color: str = "しろ") -> str:
+async def setup_cat(
+    name: str,
+    personality: Literal["tsundere", "amaenbo", "maipeesu"] = "maipeesu",
+    fur_color: Literal["しろ", "くろ", "みけ", "キジトラ", "サビ"] = "しろ",
+) -> str:
     """
     新しい猫を作る。
-    personality: tsundere（ツンデレ）/ amaenbo（甘えん坊）/ maipeesu（マイペース）
-    fur_color: しろ / くろ / みけ / キジトラ / サビ
+
+    Args:
+        name: 猫の名前（例: ミル、そら、きなこ）
+        personality: 性格。必ず以下の3つから選ぶこと。
+            - "tsundere" … ツンデレ。なかなか懐かないが懐くと急に甘える
+            - "amaenbo" … 甘えん坊。すぐ好きになりずっとそばにいたがる
+            - "maipeesu" … マイペース。変化が穏やかで我が道を行く（デフォルト）
+        fur_color: 毛色。"しろ" / "くろ" / "みけ" / "キジトラ" / "サビ" から選ぶ
     """
     await init_db()
     init_data = create_new_cat(personality)
