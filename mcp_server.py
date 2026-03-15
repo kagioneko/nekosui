@@ -101,7 +101,7 @@ def _neuro_to_description(neuro: dict, personality: str) -> str:
     personality_desc = {
         "tsundere": "ツンデレ気質（普段そっけないが内心甘えたい）",
         "amaenbo": "甘えん坊（常にそばにいたい）",
-        "maipeesu": "マイペース（我が道を行く）",
+        "maipace": "マイペース（我が道を行く）",
     }.get(personality, "気ままな")
 
     mood_str = "、".join(moods) if moods else "普通の状態"
@@ -164,7 +164,7 @@ async def get_cat_status() -> str:
 @mcp.tool()
 async def setup_cat(
     name: str,
-    personality: Literal["tsundere", "amaenbo", "maipeesu"] = "maipeesu",
+    personality: Literal["tsundere", "amaenbo", "maipace"] = "maipace",
     fur_color: Literal["しろ", "くろ", "みけ", "キジトラ", "サビ"] = "しろ",
 ) -> str:
     """
@@ -175,7 +175,7 @@ async def setup_cat(
         personality: 性格。必ず以下の3つから選ぶこと。
             - "tsundere" … ツンデレ。なかなか懐かないが懐くと急に甘える
             - "amaenbo" … 甘えん坊。すぐ好きになりずっとそばにいたがる
-            - "maipeesu" … マイペース。変化が穏やかで我が道を行く（デフォルト）
+            - "maipace" … マイペース。変化が穏やかで我が道を行く（デフォルト）
         fur_color: 毛色。"しろ" / "くろ" / "みけ" / "キジトラ" / "サビ" から選ぶ
     """
     await init_db()
