@@ -40,11 +40,10 @@ if exist "..\neurostate-engine" (
 REM バックエンド
 echo.
 echo Setting up backend...
-if not exist "backend" mkdir backend
-cd backend
-python -m pip install -r requirements.txt --quiet
-if not exist ".env" (
-    copy .env.example .env
+if not exist "%~dp0backend" mkdir "%~dp0backend"
+python -m pip install -r "%~dp0backend\requirements.txt" --quiet
+if not exist "%~dp0backend\.env" (
+    copy "%~dp0backend\.env.example" "%~dp0backend\.env"
     echo [OK] .env created.
     echo.
     echo ----------------------------------------
@@ -55,13 +54,12 @@ if not exist ".env" (
 ) else (
     echo [OK] .env already exists.
 )
-cd /d "%~dp0"
 
 REM フロントエンド
 echo.
 echo Setting up frontend...
-if not exist "frontend" mkdir frontend
-cd frontend
+if not exist "%~dp0frontend" mkdir "%~dp0frontend"
+cd /d "%~dp0frontend"
 npm install
 cd /d "%~dp0"
 
