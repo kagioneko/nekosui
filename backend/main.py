@@ -1,6 +1,7 @@
 """ネコスイ バックエンド FastAPI アプリ"""
 
 from __future__ import annotations
+import asyncio
 import sys
 from pathlib import Path
 
@@ -42,6 +43,7 @@ from session_manager import (
     reset_session,
 )
 from time_behavior import get_time_period
+from recovery_manager import apply_action_recovery_boost, recovery_background_task
 
 
 # --- NeuroState 更新ユーティリティ ---
@@ -116,7 +118,9 @@ def compute_relationship_gain(action_result: str, o: float) -> float:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    task = asyncio.create_task(recovery_background_task())
     yield
+    task.cancel()
 
 
 app = FastAPI(
@@ -210,6 +214,10 @@ async def chat(req: ChatRequest):
 
     # --- 逃げてる猫が戻るか判定（毎アクションで確認） ---
     if is_fled:
+        # アクションによってS・Gを回復ブースト（性格差あり）
+        neuro_dict = apply_action_recovery_boost(neuro_dict, req.action, cat.personality)
+        event_log.append(f"recovery_boost: action={req.action} personality={cat.personality}")
+
         if decide_can_return(neuro_dict):
             is_fled = False
             consecutive = 0
