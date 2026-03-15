@@ -1,0 +1,70 @@
+import { useState, useCallback } from 'react'
+import { api } from '../api/client'
+import type { CatProfile, ActionType, Pose, Expression, TimePeriod } from '../types'
+
+export interface GameState {
+  sessionId: string
+  cat: CatProfile
+  message: string
+  pose: Pose
+  expression: Expression
+  sound: string | null
+  isFled: boolean
+  relationshipLevel: number
+  timePeriod: TimePeriod
+  isLoading: boolean
+}
+
+export function useGame() {
+  const [state, setState] = useState<GameState | null>(null)
+
+  const setup = useCallback(async (
+    name: string,
+    personality: 'tsundere' | 'amaenbo' | 'maipace',
+    furColor: 'shiro' | 'kuro' | 'mike' | 'kijitora' | 'sabi',
+  ) => {
+    const res = await api.setup(name, personality, furColor)
+    console.debug('[nekosui] setup', res.initial_state)
+
+    const status = await api.status(res.session_id)
+    setState({
+      sessionId: res.session_id,
+      cat: res.cat,
+      message: res.greeting,
+      pose: 'sit',
+      expression: 'normal',
+      sound: null,
+      isFled: false,
+      relationshipLevel: 0,
+      timePeriod: status.time_period,
+      isLoading: false,
+    })
+  }, [])
+
+  const act = useCallback(async (action: ActionType, text?: string) => {
+    if (!state || state.isLoading) return
+
+    setState(s => s ? { ...s, isLoading: true } : s)
+
+    try {
+      const res = await api.chat(state.sessionId, action, text)
+      console.debug('[nekosui] chat', { action, neuro: res.neuro_state, log: res.event_log })
+
+      setState(s => s ? {
+        ...s,
+        message: res.message,
+        pose: res.pose,
+        expression: res.expression,
+        sound: res.sound,
+        isFled: res.is_fled,
+        relationshipLevel: res.relationship_level,
+        isLoading: false,
+      } : s)
+    } catch (err) {
+      console.error('[nekosui] error', err)
+      setState(s => s ? { ...s, isLoading: false } : s)
+    }
+  }, [state])
+
+  return { state, setup, act }
+}

@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; }
+#root { width: 100%; min-height: 100svh; }
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(130%); opacity: 0; }
+}
+@keyframes slideIn {
+  from { transform: translateX(130%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%  { transform: translateX(-8px); }
+  40%  { transform: translateX(8px); }
+  60%  { transform: translateX(-5px); }
+  80%  { transform: translateX(5px); }
+}
+@keyframes heartPop {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.15); }
+}
+
+.cat-slide-out { animation: slideOut 0.5s ease-in forwards; }
+.cat-slide-in  { animation: slideIn  0.4s ease-out forwards; }
+.bubble-in     { animation: bubbleIn 0.25s ease forwards; }
+.shake         { animation: shake 0.35s ease; }
+.heart-pop     { animation: heartPop 0.5s ease; }
