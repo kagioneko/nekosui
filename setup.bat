@@ -30,7 +30,7 @@ echo.
 echo Checking neurostate-engine...
 if exist "..\neurostate-engine" (
     echo [OK] neurostate-engine already exists.
-    cd ..\neurostate-engine && git pull --quiet && cd /d "%~dp0"
+    cd ..\neurostate-engine && git stash --quiet && git pull --quiet && cd /d "%~dp0"
 ) else (
     echo Cloning neurostate-engine...
     git clone https://github.com/kagioneko/neurostate-engine ..\neurostate-engine
