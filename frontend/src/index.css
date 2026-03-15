@@ -4,6 +4,16 @@
 body { margin: 0; font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; }
 #root { width: 100%; min-height: 100svh; }
 
+/* iOS Safari: input が16px未満だと自動ズームするのを防ぐ */
+input, textarea, select { font-size: 16px; }
+
+/* iOS Safari: タップ時のハイライト除去 */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* safe-area padding ユーティリティ */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+
 @keyframes slideOut {
   from { transform: translateX(0); opacity: 1; }
   to   { transform: translateX(130%); opacity: 0; }
