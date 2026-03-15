@@ -165,7 +165,7 @@ async def get_cat_status() -> str:
 async def setup_cat(
     name: str,
     personality: Literal["tsundere", "amaenbo", "maipace"] = "maipace",
-    fur_color: Literal["しろ", "くろ", "みけ", "キジトラ", "サビ"] = "しろ",
+    fur_color: Literal["shiro", "kuro", "mike", "kijitora", "sabi"] = "shiro",
 ) -> str:
     """
     新しい猫を作る。
@@ -176,7 +176,7 @@ async def setup_cat(
             - "tsundere" … ツンデレ。なかなか懐かないが懐くと急に甘える
             - "amaenbo" … 甘えん坊。すぐ好きになりずっとそばにいたがる
             - "maipace" … マイペース。変化が穏やかで我が道を行く（デフォルト）
-        fur_color: 毛色。"しろ" / "くろ" / "みけ" / "キジトラ" / "サビ" から選ぶ
+        fur_color: 毛色。"shiro"（白）/ "kuro"（黒）/ "mike"（三毛）/ "kijitora"（キジトラ）/ "sabi"（サビ）から選ぶ
     """
     await init_db()
     init_data = create_new_cat(personality)
