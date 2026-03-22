@@ -40,10 +40,30 @@ _TEMPLATES: dict[str, dict[str, list[str]]] = {
         "amaenbo": ["ん〜？", "もうちょっと待って", "…（迷い中）"],
         "maipace": ["…（じっと見る）", "ふむ", "…"],
     },
+    "punch": {
+        "tsundere": ["ぺしっ", "…（無言でぱんち）", "触るな", "…（じろり）ぺし"],
+        "amaenbo": ["や！", "ぺしっ…（でもまだいる）", "ちょっと！"],
+        "maipace": ["…（ぺし）", "やめ", "…（無言でぱんち）"],
+    },
     "kick": {
         "tsundere": ["ふしゃー！", "触るな！", "やめろって言ってる！"],
         "amaenbo": ["や、やだ！", "いたい！", "ふー！"],
         "maipace": ["……", "やめ", "（足蹴り）"],
+    },
+    "hiss": {
+        "tsundere": ["ふしゃーっ！！", "来るな！！", "近づくな！"],
+        "amaenbo": ["いや〜！！", "やめて〜！！"],
+        "maipace": ["…シャー", "…（威嚇）"],
+    },
+    "naderu_punch": {
+        "tsundere": ["ぺしっ…（じろり）", "…やめろ", "触りすぎ"],
+        "amaenbo": ["も、もうちょっとだけ…ぺし", "や！（でも逃げない）"],
+        "maipace": ["…（ぺし）", "やめ", "限界"],
+    },
+    "naderu_kick": {
+        "tsundere": ["いい加減にしろ！", "触るな！", "ふしゃっ！"],
+        "amaenbo": ["やだやだ！", "もうやだ！ふー！"],
+        "maipace": ["…（足蹴り）", "やめ", "……"],
     },
     "flee": {
         "tsundere": ["うるさい！もう知らない！", "あっち行って！"],
@@ -219,19 +239,23 @@ def decide_cat_behavior(
 def _get_template_key(action: str, result: str) -> str:
     """アクションと結果からテンプレートキーを生成する。"""
     mapping = {
-        ("nekosui", "goro"): "goro",
-        ("nekosui", "stare"): "stare",
-        ("nekosui", "kick"): "kick",
-        ("nekosui", "flee"): "flee",
-        ("dakko", "accept"): "dakko_accept",
-        ("dakko", "resist"): "dakko_resist",
-        ("dakko", "escape"): "dakko_escape",
-        ("naderu", "ok"): "naderu_ok",
-        ("gohan", "ok"): "gohan_ok",
-        ("asobu", "ok"): "asobu_ok",
-        ("namae", "ok"): "namae_ok",
-        ("mushi", "ok"): "mushi_ok",
-        ("text", "ok"): "text_ok",
+        ("nekosui", "goro"):   "goro",
+        ("nekosui", "stare"):  "stare",
+        ("nekosui", "punch"):  "punch",
+        ("nekosui", "kick"):   "kick",
+        ("nekosui", "flee"):   "flee",
+        ("dakko", "accept"):   "dakko_accept",
+        ("dakko", "resist"):   "dakko_resist",
+        ("dakko", "escape"):   "dakko_escape",
+        ("naderu", "ok"):      "naderu_ok",
+        ("naderu", "punch"):   "naderu_punch",
+        ("naderu", "kick"):    "naderu_kick",
+        ("naderu", "hiss"):    "hiss",
+        ("gohan", "ok"):       "gohan_ok",
+        ("asobu", "ok"):       "asobu_ok",
+        ("namae", "ok"):       "namae_ok",
+        ("mushi", "ok"):       "mushi_ok",
+        ("text", "ok"):        "text_ok",
     }
     return mapping.get((action, result), "text_ok")
 
@@ -239,11 +263,13 @@ def _get_template_key(action: str, result: str) -> str:
 def _get_sound(result: str, o: float) -> str | None:
     """結果とOキシトシン値から効果音キーを返す。"""
     sound_map = {
-        "goro": "purring",
-        "stare": None,
-        "kick": "hissing",
-        "flee": "hissing",
-        "ok": "purring" if o >= 55 else None,
+        "goro":   "purring",
+        "stare":  None,
+        "punch":  "swat",
+        "kick":   "hissing",
+        "hiss":   "hissing",
+        "flee":   "hissing",
+        "ok":     "purring" if o >= 55 else None,
         "accept": "purring",
         "resist": None,
         "escape": "hissing",

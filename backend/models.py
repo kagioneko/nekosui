@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 PersonalityType = Literal["tsundere", "amaenbo", "maipace"]
 FurColor = Literal["shiro", "kuro", "mike", "kijitora", "sabi"]
+DailyMood = Literal["good", "normal", "clingy", "leavemealone", "hunter", "sleepy"]
 
 class CatSetupRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=20, description="猫の名前")
@@ -46,6 +47,8 @@ class SessionStatus(BaseModel):
     is_fled: bool  # 逃げてるか
     time_period: str  # "morning" / "midday" / "evening" / "night" / "midnight"
     consecutive_nekosui: int  # 連続猫吸い回数
+    consecutive_naderu: int  # 連続なで回数
+    daily_mood: str  # 今日の気分
 
 
 # --- チャット ---

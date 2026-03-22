@@ -116,11 +116,13 @@ def _action_to_desc(action: str, text: str | None) -> str:
 def compute_relationship_gain(action_result: str, o: float) -> float:
     """アクション結果とOキシトシン値から親密度上昇量を計算する。"""
     gain_map = {
-        "goro": 0.008,
-        "stare": 0.002,
-        "kick": -0.001,
-        "flee": -0.005,
-        "ok": 0.003,
+        "goro":   0.008,
+        "stare":  0.002,
+        "punch":  -0.001,
+        "kick":   -0.002,
+        "hiss":   -0.004,
+        "flee":   -0.005,
+        "ok":     0.003,
         "accept": 0.006,
         "resist": 0.001,
         "escape": -0.002,
@@ -247,6 +249,8 @@ async def chat(req: ChatRequest):
     }
     is_fled = status.is_fled
     consecutive = status.consecutive_nekosui
+    consecutive_naderu = status.consecutive_naderu
+    daily_mood = status.daily_mood
     relationship = status.relationship_level
     time_info = get_time_period()
     event_log: list[str] = []
@@ -270,30 +274,35 @@ async def chat(req: ChatRequest):
     state_event, action_result = get_action_event(
         action=req.action,
         consecutive_nekosui=consecutive,
+        consecutive_naderu=consecutive_naderu,
         neuro_state=neuro_dict,
         personality=cat.personality,
+        daily_mood=daily_mood,
     )
-    event_log.append(f"action={req.action} result={action_result}")
+    event_log.append(f"action={req.action} result={action_result} mood={daily_mood}")
 
     # --- NeuroState 更新 ---
     delta = state_event.to_delta()
     new_neuro = apply_state_delta(neuro_dict, delta)
     event_log.append(f"O: {neuro_dict['O']:.1f} → {new_neuro['O']:.1f}")
 
-    # --- 連続猫吸いカウント更新 ---
+    # --- 連続カウント更新 ---
     if req.action == "nekosui":
-        if action_result == "flee":
-            new_consecutive = 0  # 逃げたらリセット
-        else:
-            new_consecutive = consecutive + 1
+        new_consecutive = 0 if action_result == "flee" else consecutive + 1
+        new_consecutive_naderu = 0
+    elif req.action == "naderu":
+        new_consecutive = 0
+        new_consecutive_naderu = 0 if action_result in ("hiss", "flee") else consecutive_naderu + 1
     else:
-        new_consecutive = 0  # 他アクションでリセット
+        new_consecutive = 0
+        new_consecutive_naderu = 0  # 他アクションでなでカウントリセット
 
     # --- 逃げる判定 ---
     new_is_fled = is_fled
-    if action_result in ("flee", "escape"):
+    if action_result in ("flee", "escape", "hiss"):
         new_is_fled = True
         new_consecutive = 0
+        new_consecutive_naderu = 0
         event_log.append("猫が逃げた")
 
     # --- 行動決定 ---
@@ -335,6 +344,7 @@ async def chat(req: ChatRequest):
         relationship_level=new_relationship,
         is_fled=new_is_fled,
         consecutive_nekosui=new_consecutive,
+        consecutive_naderu=new_consecutive_naderu,
     )
 
     # --- ログ保存 ---

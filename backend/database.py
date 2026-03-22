@@ -32,9 +32,19 @@ CREATE TABLE IF NOT EXISTS sessions (
     relationship_level  REAL NOT NULL DEFAULT 0.0,
     is_fled             INTEGER NOT NULL DEFAULT 0,
     consecutive_nekosui INTEGER NOT NULL DEFAULT 0,
+    consecutive_naderu  INTEGER NOT NULL DEFAULT 0,
+    daily_mood          TEXT NOT NULL DEFAULT 'normal',
+    daily_mood_date     TEXT NOT NULL DEFAULT '',
     updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
 )
 """
+
+# 既存DBへのマイグレーション（カラム追加）
+_MIGRATIONS = [
+    "ALTER TABLE sessions ADD COLUMN consecutive_naderu INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE sessions ADD COLUMN daily_mood TEXT NOT NULL DEFAULT 'normal'",
+    "ALTER TABLE sessions ADD COLUMN daily_mood_date TEXT NOT NULL DEFAULT ''",
+]
 
 CREATE_CHAT_HISTORY = """
 CREATE TABLE IF NOT EXISTS chat_history (
@@ -51,11 +61,17 @@ CREATE TABLE IF NOT EXISTS chat_history (
 
 
 async def init_db() -> None:
-    """データベースを初期化する（テーブルが存在しない場合のみ作成）。"""
+    """データベースを初期化し、マイグレーションを適用する。"""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(CREATE_CATS)
         await db.execute(CREATE_SESSIONS)
         await db.execute(CREATE_CHAT_HISTORY)
+        # 既存DBにカラムがなければ追加（エラーは無視）
+        for sql in _MIGRATIONS:
+            try:
+                await db.execute(sql)
+            except Exception:
+                pass
         await db.commit()
 
 
