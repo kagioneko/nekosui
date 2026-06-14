@@ -60,7 +60,7 @@ export function useGame() {
       })
       return true
     } catch {
-      clearSavedSession()
+      await api.clearSavedSession()
       return false
     }
   }, [])
